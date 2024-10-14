@@ -1,0 +1,7 @@
+Các bước chạy dự án:
+
+B1: python3 -m venv .venv 
+B2: source .venv/bin/activate
+B3: install -r requirements.txt 
+
+chạy: streamlit run signlanguage.py
