@@ -2,6 +2,13 @@ import streamlit as st
 import cv2
 import tempfile
 import os
+import time
+import mediapipe as mp
+
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands()
+mp_draw = mp.solutions.drawing_utils
+
 
 def SLtoText():
     st.title('Sign Language to Text', anchor=None)  # Set the title without an anchor
@@ -40,8 +47,8 @@ def SLtoText():
     
     # Output area
     st.markdown('## Output', unsafe_allow_html=True)
-    output_text = ""  # Placeholder for output text
-    st.markdown(f'<p class="output-text">{output_text}</p>', unsafe_allow_html=True)
+    sameer = ""  # Placeholder for output text
+    st.markdown(f'<p class="output-text">{sameer}</p>', unsafe_allow_html=True)
 
     # Placeholder for video frame
     stframe = st.empty()

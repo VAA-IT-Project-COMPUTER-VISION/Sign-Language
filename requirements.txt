@@ -5,4 +5,4 @@ streamlit
 mediapipe
 numpy
 Pillow
-
+SpeechRecognition

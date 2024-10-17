@@ -1,6 +1,54 @@
 import streamlit as st
 import time
+import os
+import speech_recognition as sr
+from PIL import Image
 
+
+# Function to display sign language images
+def display_images(text):
+    img_dir = "images/"  # Ensure this directory contains images like a.png, b.png, etc., and space.png for space
+
+    # Position to update images
+    image_pos = st.empty()
+
+    # Loop through each character in the text and display the corresponding image
+    for char in text:
+        if char.isalpha():  # Check if the character is a letter
+            img_path = os.path.join(img_dir, f"{char}.png")
+            if os.path.exists(img_path):
+                img = Image.open(img_path)
+                image_pos.image(img, width=300)  # Display image in 'image_pos' container
+                time.sleep(2)  # Wait 2 seconds
+                image_pos.empty()
+        elif char == ' ':
+            img_path = os.path.join(img_dir, "space.png")
+            if os.path.exists(img_path):
+                img = Image.open(img_path)
+                image_pos.image(img, width=300)  # Display image for space
+                time.sleep(2)
+                image_pos.empty()
+
+
+def recognize_speech_from_mic():
+    recognizer = sr.Recognizer()
+    mic = sr.Microphone()
+
+    with mic as source:
+        st.write("Đang lắng nghe... Hãy nói vào micro!")
+        audio = recognizer.listen(source)  # Listen to the microphone input
+
+    try:
+        # Recognize speech using Google Web Speech API
+        text = recognizer.recognize_google(audio, language='en-US')  # You can change the language code as needed
+        st.markdown(f"<div class='result-text'>Bạn đã nói: '{text}'</div>", unsafe_allow_html=True)
+        return text.lower()  # Return the recognized text in lowercase
+    except sr.UnknownValueError:
+        st.error("Không thể nhận diện được giọng nói.")
+    except sr.RequestError as e:
+        st.error(f"Có lỗi xảy ra: {e}")
+
+# Main UI function
 def speech_to_sign_ui():
     # Custom CSS for the interface
     st.markdown("""
@@ -71,35 +119,36 @@ def speech_to_sign_ui():
         </style>
     """, unsafe_allow_html=True)
 
-    # Display title and subtitle
+    # Main interface
     st.markdown("<div class='title'>Chuyển Đổi Giọng Nói Sang Ngôn Ngữ Ký Hiệu</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>Chuyển đổi giọng nói của bạn sang các ký hiệu.</div>", unsafe_allow_html=True)
 
-    # Introductory image
+    # Intro image
     st.image("https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj4MsLwQcrXHlHoIezTPh2ba2K7rD3bOC_Tos72H0yjtojxilsCNJszTDuDIxLegfQS9KppgGNdouCx3EbJtaX0mH82X4gEZvGrnhPVyK-dRzPTUi7aXn7jxxVXgcOozxrJ7BA-pg9F7rMMg51qmJuP-AT_kO9RebzDvajBO7KrEmh7NrZtqg-EnFU3/s16000/Traveling%20with%20a%20Disability%20in%20Vietnam%2004.jpg", 
              use_column_width=True, caption="Chào mừng đến với ứng dụng Ngôn Ngữ Ký Hiệu", output_format="PNG")
 
-    # Buttons for functionalities
+    # Buttons and text input
     col1, col2 = st.columns(2)
-    
+
+    # Text input section
     with col1:
         st.markdown("<div class='column'>", unsafe_allow_html=True)
-        if st.button("Nhập Văn Bản", key='text_input_button', help="Nhập văn bản để chuyển đổi sang ngôn ngữ ký hiệu"):
-            text_input = st.text_input("Nhập văn bản của bạn:", "")
+        text_input = st.text_input("Nhập văn bản của bạn:")
+        if st.button("Hiển thị ngôn ngữ ký hiệu", key='text_input_button'):
             if text_input:
+                text_input = text_input.lower()  # Convert to lowercase
                 st.markdown(f"<div class='result-text'>Bạn đã nhập: '{text_input}'</div>", unsafe_allow_html=True)
-                # Placeholder for displaying the image based on text
-                st.image("https://via.placeholder.com/300?text=Ký+Hiệu+Tương+Ứng", caption="Hình ảnh ngôn ngữ ký hiệu tương ứng", use_column_width=True)
+                display_images(text_input)
         st.markdown("</div>", unsafe_allow_html=True)
 
+    # Speech input section
     with col2:
         st.markdown("<div class='column'>", unsafe_allow_html=True)
         if st.button("Bắt đầu nói", key='start_button', help="Nhấn để bắt đầu nhận diện giọng nói"):
-            st.write("Đang lắng nghe... Hãy nói vào micro!")
-            time.sleep(2)  # Simulate processing time
-            st.markdown("<div class='result-text'>Bạn đã nói: 'Xin chào'</div>", unsafe_allow_html=True)
-            # Example image with 3D effect
-            st.image("https://via.placeholder.com/300?text=Ký+Hiệu+Tương+Ứng", caption="Hình ảnh ngôn ngữ ký hiệu tương ứng", use_column_width=True)
+            recognized_text = recognize_speech_from_mic()  # Recognize speech from microphone
+            if recognized_text:  # If speech is recognized
+                display_images(recognized_text)  # Display corresponding sign images
         st.markdown("</div>", unsafe_allow_html=True)
 
-
+# Call the UI function to run the app
+speech_to_sign_ui()
